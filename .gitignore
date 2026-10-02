@@ -27,3 +27,6 @@ build
 # Embedded Postgres data (scripts/db.mjs)
 .postgres/
 medusa.db*
+
+# uploaded site content images (runtime data)
+static/
