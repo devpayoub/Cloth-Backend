@@ -7,8 +7,10 @@ import {
   createRegionsWorkflow,
   createSalesChannelsWorkflow,
   linkSalesChannelsToApiKeyWorkflow,
+  updateStoresWorkflow,
 } from "@medusajs/medusa/core-flows";
 import { seedCategories, seedProducts } from "./seed-data";
+import { defaultSiteContent } from "../utils/site-content";
 
 /**
  * Seeds the Cloth storefront catalog (idempotent — safe to re-run):
@@ -168,7 +170,27 @@ export default async function seed({ container }: ExecArgs) {
     logger.info("Products already present");
   }
 
-  // 5) Sanity check
+  // 5) Site content defaults — only if the admin has not customized it yet
+  const { data: stores } = await query.graph({
+    entity: "store",
+    fields: ["id", "metadata"],
+  });
+  const store = stores[0];
+  if (store && !store.metadata?.site_content) {
+    await updateStoresWorkflow(container).run({
+      input: {
+        selector: { id: store.id },
+        update: {
+          metadata: { ...(store.metadata ?? {}), site_content: defaultSiteContent },
+        },
+      },
+    });
+    logger.info("Site content defaults written to store metadata");
+  } else {
+    logger.info("Site content already present");
+  }
+
+  // 6) Sanity check
   const { data: storedProducts } = await query.graph({
     entity: "product",
     fields: ["id", "handle", "variants.*"],

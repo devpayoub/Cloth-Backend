@@ -12,5 +12,19 @@ module.exports = defineConfig({
       jwtSecret: process.env.JWT_SECRET || "supersecret",
       cookieSecret: process.env.COOKIE_SECRET || "supersecret",
     }
-  }
+  },
+  // Uploads via the admin "Site Content" page land in the directory the
+  // server statically serves at /static (baseDir = .medusa/server).
+  fileProvider: {
+    providers: [
+      {
+        resolve: '@medusajs/file-local',
+        id: 'local',
+        options: {
+          uploadDir: '.medusa/server/static',
+          backendUrl: process.env.MEDUSA_BACKEND_URL ?? 'http://localhost:9000/static',
+        },
+      },
+    ],
+  },
 })
