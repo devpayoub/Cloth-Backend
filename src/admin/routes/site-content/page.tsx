@@ -49,7 +49,10 @@ async function uploadImage(file: File): Promise<string> {
     credentials: "include",
     body,
   });
-  if (!res.ok) throw new Error("Upload failed");
+  if (!res.ok) {
+    const errText = await res.text().catch(() => res.statusText);
+    throw new Error(`Upload failed (${res.status}): ${errText}`);
+  }
   const json = (await res.json()) as { files: { url: string }[] };
   return json.files[0].url;
 }
